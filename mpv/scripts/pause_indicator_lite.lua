@@ -21,14 +21,23 @@ local options = {
     icon_border_color = "#111111",   -- icon border color
     icon_opacity = 40,               -- icon opacity (0-100)
 
+    -- -- pause icon(DEFAULT)
+    -- rectangles_width = 30,           -- width of rectangles
+    -- rectangles_height = 80,          -- height of rectangles
+    -- rectangles_spacing = 20,         -- spacing between the two rectangles
+
+    -- -- play icon(DEFAULT)
+    -- triangle_width = 80,             -- width of triangle
+    -- triangle_height = 80,            -- height of triangle
+    
     -- pause icon
-    rectangles_width = 30,           -- width of rectangles
-    rectangles_height = 80,          -- height of rectangles
-    rectangles_spacing = 20,         -- spacing between the two rectangles
+    rectangles_width = 15,           -- width of rectangles
+    rectangles_height = 40,          -- height of rectangles
+    rectangles_spacing = 10,         -- spacing between the two rectangles
 
     -- play icon
-    triangle_width = 80,             -- width of triangle
-    triangle_height = 80,            -- height of triangle
+    triangle_width = 40,             -- width of triangle
+    triangle_height = 40,            -- height of triangle
 
     -- best with pause icon
     flash_play_icon = true,          -- flash play icon on unpause
