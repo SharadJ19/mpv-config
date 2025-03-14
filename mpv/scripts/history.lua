@@ -18,7 +18,7 @@ local options = require 'mp.options'
 local o = {
     exclude = "",
     storage_path = "~~/history.txt",
-    minimal_play_time = 5, -- minimum watch time to log in seconds
+    minimal_play_time = 120, -- minimum watch time to log in seconds
 }
 
 options.read_options(o)
