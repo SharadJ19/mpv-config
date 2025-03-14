@@ -1,9 +1,8 @@
 --[[
-    Modified mpv history script
     Tracks watched media and logs:
     1. Date and time:                 14.03.2025 10:43 AM
-    2. Minutes played:                23 min
-    3. Completion percentage:         98%
+    2. Watch Time:                    23 min
+    3. Progress:                      98%
     4. Filename:                      Big Buck Bunny.mkv
     
     Output format:
@@ -14,25 +13,23 @@ local mp = require 'mp'
 local msg = require 'mp.msg'
 local options = require 'mp.options'
 
--- Configuration
 local o = {
     exclude = "",
     storage_path = "~~/history.txt",
-    minimal_play_time = 120, -- minimum watch time to log in seconds
+    minimal_play_time = 120,
 }
 
 options.read_options(o)
 o.storage_path = mp.command_native({"expand-path", o.storage_path})
 
--- State variables
 local watch_data = {
-    start_time = 0,     -- System time when playback started
-    path = "",          -- File path
-    filename = "",      -- Filename without path
-    duration = 0,       -- Duration of the media in seconds
-    start_pos = 0,      -- Position when playback started
-    last_pos = 0,       -- Last known position
-    is_playing = false  -- Whether playback is currently active
+    start_time = 0,
+    path = "",
+    filename = "",
+    duration = 0,
+    start_pos = 0,
+    last_pos = 0,
+    is_playing = false
 }
 
 -- Utility functions
@@ -61,7 +58,7 @@ function format_time_12h()
     if hour > 12 then hour = hour - 12
     elseif hour == 0 then hour = 12 end
     
-    return string.format("%d:%s %s", hour, minute, period)
+    return string.format("%2d:%s %s", hour, minute, period)
 end
 
 function round(num)
@@ -77,7 +74,13 @@ end
 function ensure_file_exists(path)
     if not file_exists(path) then
         local f = io.open(path, "w")
-        if f then f:close() return true end
+        if f then 
+            
+            f:write("Date & Time          |  Watch Time  |  Progress  |  Filename\n")
+            f:write("---------------------|--------------|------------|-----------------------------------------------------\n")
+            f:close() 
+            return true 
+        end
         return false
     end
     return true
@@ -168,28 +171,23 @@ end
 function log_history()
     if not watch_data.path or watch_data.path == "" then return end
     
-    -- Get the final position
     local final_pos = mp.get_property_number("time-pos") or watch_data.last_pos
     watch_data.last_pos = final_pos
     
-    -- Calculate watch time
     local watch_time = os.time() - watch_data.start_time
     if watch_time < o.minimal_play_time then return end
     
-    -- Calculate percentage
     local percentage = calculate_percentage()
     
-    -- Format output
     local date_str = os.date("%d.%m.%Y ")
     local time_str = format_time_12h()
     local minutes = round(watch_time / 60)
-    local min_str = string.format("%d min", minutes)
+    local min_str = string.format("%2d min", minutes)
     
-    local log_line = string.format("%s%s  |  %s  |  %d%%  |  %s\n",
+    local log_line = string.format("%s%s  |  %-10s  |  %3d%%      |  %s\n",
                                   date_str, time_str, min_str, 
                                   percentage, watch_data.filename)
     
-    -- Write to file
     if not should_exclude(watch_data.path) then
         if ensure_file_exists(o.storage_path) then
             if file_append(o.storage_path, log_line) then
@@ -202,7 +200,6 @@ function log_history()
         end
     end
     
-    -- Reset state
     watch_data = {
         start_time = 0,
         path = "",
@@ -214,7 +211,6 @@ function log_history()
     }
 end
 
--- Set up event handlers
 mp.register_event("file-loaded", on_file_loaded)
 mp.register_event("end-file", log_history)
 mp.register_event("shutdown", log_history)
@@ -222,10 +218,8 @@ mp.observe_property("pause", "bool", on_pause_change)
 mp.register_event("seek", on_seek)
 mp.register_event("playback-restart", on_playback_restart)
 
--- Update position every second to keep track of playback
 mp.add_periodic_timer(1, update_position)
 
--- Create history file if it doesn't exist on script load
 if not ensure_file_exists(o.storage_path) then
     msg.error("Failed to create history file on startup: " .. o.storage_path)
 else
